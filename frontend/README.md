@@ -1,25 +1,85 @@
-# Free eCommerce Template for Next.js - NextMerce
+# final_project
 
-The free Next.js eCommerce template is a lite version of the NextMerce Next.js eCommerce boilerplate, designed to streamline the launch and management of your online store.
+# 🛒Hmizate Store
+Hmizate Store is a full-stack MERN (MongoDB, Express.js, React.js, Node.js) web platform that allows users to buy and sell used products — including cars, phones, PCs, and washing machines. What sets HamzaStore apart is its expert verification service: buyers can request certified experts to inspect a product before purchasing, helping build trust in second-hand transactions.
 
-![NextMerce](https://github.com/user-attachments/assets/57155689-a756-4222-8af7-134e556acae2)
+---
 
+## 🌟 Features
 
-While NextMerce Pro features advanced functionalities, seamless integration, and customizable options, providing all the essential tools needed to build and expand your business, the lite version offers a basic Next.js template specifically crafted for eCommerce websites. Both versions ensure superior performance and flexibility, all powered by Next.js.
+### 👥 User Roles
+- **Buyer:** Browse, filter, and book expert inspections.
+- **Seller:** List and manage used products.
+- **Expert:** Accept and manage inspection bookings.
+- **Admin:** Approve listings, manage users, and moderate activity.
 
-### NextMerce Free VS NextMerce Pro
+### 📦 Product Marketplace
+- Categories: Vehicles( car | bicycle | electric scooter), Phones, PCs, Home Appliances (washing machine | dishwasher | refrigerator | ...)
+- Add product listings with multiple images
+- Search and filter by category, price, location
+- Mark products as “Available” or “Sold”
 
-| ✨ Features                         | 🎁 NextMerce Free                 | 🔥 NextMerce Pro                        |
-|----------------------------------|--------------------------------|--------------------------------------|
-| Next.js Pages                    | Static                         | Dynamic Boilerplate Template         |
-| Components                       | Limited                        | All According to Demo                |
-| eCommerce Functionality          | Included                       | Included                             |
-| Integrations (DB, Auth, etc.)    | Not Included                   | Included                             |
-| Community Support                | Included                       | Included                             |
-| Premium Email Support            | Not Included                   | Included                             |
-| Lifetime Free Updates            | Included                       | Included                             |
+### 🧑‍🔧 Expert Booking System
+- Buyers can book experts to inspect specific listings
+- Experts receive requests and respond via dashboard
+- Post-inspection report submission by expert
+- Booking status: Pending → Accepted → Completed
 
+### 💼 Admin Dashboard
+- Approve listings and expert registrations
+- Monitor bookings, users, and products
 
-#### [🚀 Live Demo](https://demo.nextmerce.com/)
+### 📑 Legal Compliance (For Car Listings)
+- Educational page for Moroccan car sale laws
+- Checklist and optional document upload (e.g., Carte Grise)
+- “I confirm compliance” checkbox for car sellers
 
-#### [🌐 Visit Website](https://nextmerce.com/)
+### 💳 Payment System (Planned Feature)
+- Future integration with Stripe for expert service payment
+- Simulated flow in MVP (UI only)
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology | Description |
+|------------|-------------|
+| **MongoDB** | NoSQL database for users, listings, and bookings |
+| **Express.js** | REST API server for business logic |
+| **React.js** | Frontend SPA with dynamic routing |
+| **Node.js** | Backend runtime |
+| **Multer** | File/image upload handler |
+| **Tailwind CSS / Material UI** | Modern, responsive styling |
+| **JWT** | Secure user authentication |
+| **Socket.IO** (optional) | Real-time updates for expert booking |
+
+---
+
+## 🗃️ Database Models (Simplified)
+
+### User
+```js
+{
+  name,
+  email,
+  passwordHash,
+  role: "buyer" | "seller" | "expert" | "admin",
+  location
+}
+{
+  title,
+  description,
+  category,
+  price,
+  images: [url],
+  sellerId,
+  status: "available" | "sold"
+}
+{
+  productId,
+  buyerId,
+  expertId,
+  date,
+  status: "pending" | "accepted" | "completed",
+  report
+}

@@ -3,39 +3,55 @@ import { useEffect, useState } from "react";
 import api from "@/api";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import { Product } from "@/types/product";
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  whatsapp: string;
+}
+
+interface ProductType {
+  _id: string;
+  title: string;
+  price: number;
+  description: string;
+  category: string;
+  imgs: string[];
+  createdBy: User; 
+}
 
 interface Booking {
   _id: string;
-  productId: string;
+  productId: ProductType;
   expertId: string;
-  buyer: {
-    _id: string;
-    name: string;
-    email: string;
-    whatsapp: string;
-  };
+  buyer: User; 
   totalPrice: number;
-  status: "pending" | "accepted" | "cancled";
+  status: "pending" | "accepted" | "canceled";
   createdAt: string;
 }
 
+
 const ExpertBookingsPage = () => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [pendingBookings, setPendingBookings] = useState<Booking[]>([]);
+  const [acceptedBookings, setAcceptedBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const response = await api.get("/bookings/expert/bookings");
-        console.log("API response data:", response.data);
+        const response = await api.get("/bookings/pending");
+        console.log("API response data pending:", response.data);
     
         if (!Array.isArray(response.data)) {
           console.warn("Warning: bookings response is not an array!", response.data);
-          setBookings([]);
+          setPendingBookings([]);
         } else {
-          setBookings(response.data);
+          setPendingBookings(response.data);
         }
       } catch (err) {
         console.error("Failed to fetch bookings", err);
@@ -47,28 +63,60 @@ const ExpertBookingsPage = () => {
     fetchBookings();
   }, [user]);
 
-  // Optional: log bookings whenever they update
   useEffect(() => {
-    console.log("Bookings updated:", bookings);
-  }, [bookings]);
+    const fetchBookings = async () => {
+      try {
+        const response = await api.get("/bookings/expert/bookings");
+        console.log("API response data accepted:", response.data);
+    
+        if (!Array.isArray(response.data)) {
+          console.warn("Warning: bookings response is not an array!", response.data);
+          setAcceptedBookings([]);
+        } else {
+          setAcceptedBookings(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch bookings", err);
+        setError("Failed to load bookings.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookings();
+  }, [user]);
+
+  console.log("accepted", acceptedBookings);
+  useEffect(() => {
+    console.log("Bookings updated:", pendingBookings);
+  }, [pendingBookings]);
 
   const handleAccept = async (bookingId: string, buyerWhatsapp: string) => {
     try {
+      // Accept booking on the server
       await api.post(`/bookings/${bookingId}/accept`);
-      setBookings((prev) =>
-        prev.map((b) => (b._id === bookingId ? { ...b, status: "accepted" } : b))
-      );
+  
+      // Refetch accepted bookings to include the newly accepted one
+      const acceptedRes = await api.get("/bookings/expert/bookings");
+      if (Array.isArray(acceptedRes.data)) {
+        setAcceptedBookings(acceptedRes.data);
+      }
+  
+      // Remove the accepted booking from pending list
+      setPendingBookings(prev => prev.filter(b => b._id !== bookingId));
+  
+      // Open WhatsApp chat with buyer
       window.open(`https://wa.me/${buyerWhatsapp}`, "_blank");
     } catch (err) {
       console.error("Error accepting booking:", err);
       alert("Failed to accept booking");
     }
   };
-
+  
   if (loading) return <div className="text-center py-20">Loading bookings...</div>;
   if (error) return <div className="text-center py-20 text-red-500">{error}</div>;
 
-  const pendingBookings = bookings.filter((b) => b.status === "pending");
+  // const pendingbookings = pendingBookings.filter((b) => b.status === "pending");
+  // const acceptedBookings = bookings.filter((b) => b.status === "accepted");
 
   return (
     <div className="max-w-4xl mx-auto p-6 pt-15 bg-gray-100 mt-10">
@@ -88,6 +136,13 @@ const ExpertBookingsPage = () => {
               <p>
                 <strong>WhatsApp:</strong> {booking.buyer.whatsapp}
               </p>
+              <hr></hr>
+              <p>
+                <strong>Seller:</strong> {booking.productId.createdBy.name}
+              </p>
+              <p>
+                <strong>Email:</strong> {booking.productId.createdBy.email}
+              </p>
               <p>
                 <strong>Total Price:</strong> ${booking.totalPrice}
               </p>
@@ -103,6 +158,30 @@ const ExpertBookingsPage = () => {
           ))}
         </ul>
       )}
+      <h1 className="text-2xl font-semibold mb-4 mt-10">
+        Accepted Booking Requests
+      </h1>
+      <ul className="space-y-4">
+          {acceptedBookings.map((booking) => (
+            <li key={booking._id} className="p-4 border rounded shadow">
+              <p>
+                <strong>Buyer:</strong> {booking.buyer.name}
+              </p>
+              <p>
+                <strong>Email:</strong> {booking.buyer.email}
+              </p>
+              <p>
+              </p>
+              <strong>Seller:</strong> {booking.productId.createdBy.name}
+              <p>
+                <strong>WhatsApp:</strong> {booking.buyer.whatsapp}
+              </p>
+              <p>
+                <strong>Total Price:</strong> ${booking.totalPrice}
+              </p>
+            </li>
+          ))}
+        </ul>
     </div>
   );
 };

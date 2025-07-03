@@ -33,3 +33,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+node_modules
+package-lock.json
+node_modules/setprototypeof/package.json
+node_modules/side-channel-list/.editorconfig
+.env
+frontend/package-lock.json
+testing

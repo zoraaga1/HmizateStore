@@ -1,5 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { RootState } from "@/redux/store"; 
+import { useRouter } from "next/navigation";
 
 import { useModalContext } from "@/app/context/QuickViewModalContext";
 import { AppDispatch, useAppSelector } from "@/redux/store";
@@ -10,21 +13,23 @@ import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
 import { resetQuickView } from "@/redux/features/quickView-slice";
 import { updateproductDetails } from "@/redux/features/product-details";
 import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store"; 
-import { useRouter } from "next/navigation";
 import api from "@/api";
 
 const QuickViewModal = () => {
-  const user = useAppSelector((state) => state.auth.user);
-    const wishlistItems = useAppSelector((state) => state.wishlistReducer.items);
+  const userString = localStorage.getItem("user");
+const user = userString ? JSON.parse(userString) : null;
+  const wishlistItems = useAppSelector((state) => state.wishlistReducer.items);
   
   const router = useRouter();
   const { isModalOpen, closeModal } = useModalContext();
   const { openPreviewModal } = usePreviewSlider();
   const [quantity, setQuantity] = useState(1);
+  
 
   const dispatch = useDispatch<AppDispatch>();
 
+ 
+  console.log("user", user);
   // get the product data
   const product = useAppSelector((state) => state.quickViewReducer.value);
   console.log("product test", product);
@@ -51,33 +56,41 @@ const QuickViewModal = () => {
 
   //booking expert
   const handleBookExpert = async () => {
-    console.log("Logged-in user from Redux:", user);
-
-    // if (!user) {
-    //   router.push("/signin"); // or show login prompt
-    //   return;
-    // }
-
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      alert("You need to be signed in to book an expert.");
+      return;
+    }
+  
     try {
-      const bookingPayload = {
-        productId: product._id, // pass current product id here
-        expertId: null, // no expert assigned yet
-        buyer: {
-          name: user.name,
-          whatsapp: user.whatsapp || "",
+      const response = await api.post(
+        "/bookings",
+        {
+          productId: product._id,
+          buyer: {
+            name: user.name,
+            whatsapp: "0000000000",
+            email: user.email,
+          },
+          totalPrice: product.price,
         },
-        totalPrice: product.price, 
-      };
-
-      const response = await api.post("/bookings", bookingPayload);
-      alert("Booking request sent!");
-      console.log("Booking created:", response.data.booking);
-    } catch (error) {
-      console.error("Failed to create booking", error);
-      alert("Error creating booking");
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("email", response.data.booking.buyer.email);
+      console.log("Booking successful:", response.data.booking);
+      // alert("Booking submitted! Waiting for expert acceptance.");
+    } catch (err) {
+      console.error("Booking error:", err.response?.data || err.message);
+      alert("Failed to book expert. Try again.");
     }
   };
-
+  
+  
   useEffect(() => {
     // closing modal while clicking outside
     function handleClickOutside(event) {
