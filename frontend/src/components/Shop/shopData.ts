@@ -7,6 +7,6 @@ export const shopData = async (): Promise<Product[]> => {
     return response.data;
   } catch (error) {
     console.error('Error fetching products:', error);
-    throw error; // Re-throw to handle in components
+    throw error;
   }
 };

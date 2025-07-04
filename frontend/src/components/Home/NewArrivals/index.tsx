@@ -4,25 +4,25 @@ import Link from "next/link";
 import ProductItem from "@/components/Common/ProductItem";
 import { useEffect, useState } from "react";
 import { Product } from "@/types/product";
+import api from "@/api";
+import { shopData } from "@/components/Shop/shopData";
 
 const NewArrival = () => {
   const [products, setProducts] = useState([]);
 
-  const productsData = async (): Promise<Product[]> => {
-    const res = await fetch("http://localhost:5000/api/products");
-    if (!res.ok) throw new Error("Failed to fetch products");
-    return res.json();
-  };
-
   useEffect(() => {
-    const loadData = async () => {
-      const products = await productsData();
-      setProducts(products);
-      console.log("myProducts : ", products)
+    const fetchProducts = async () => {
+      try {
+        const data = await shopData();
+        setProducts(data);
+      } catch (err) {
+        console.error(err);
+      }
     };
-  
-    loadData();
+
+    fetchProducts();
   }, []);
+  
   return (
     <section className="overflow-hidden pt-15">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">

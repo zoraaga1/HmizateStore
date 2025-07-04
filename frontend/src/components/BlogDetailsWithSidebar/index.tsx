@@ -1,13 +1,31 @@
+"use client";
 import React from "react";
+import { useEffect, useState } from 'react';
 import Breadcrumb from "../Common/Breadcrumb";
 import SearchForm from "../Blog/SearchForm";
 import LatestPosts from "../Blog/LatestPosts";
 import LatestProducts from "../Blog/LatestProducts";
 import blogData from "../BlogGrid/blogData";
 import Image from "next/image";
-import shopData from "../Shop/shopData"; 
+import {shopData} from "../Shop/shopData"; 
+import { Product } from "@/types/product";
+
 
 const BlogDetailsWithSidebar = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  
+    useEffect(() => {
+      const fetchProducts = async () => {
+        try {
+          const data = await shopData(); // ✅ Await the async call
+          setProducts(data);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+  
+      fetchProducts();
+    }, []);
   return (
     <>
       <Breadcrumb
@@ -272,7 +290,7 @@ const BlogDetailsWithSidebar = () => {
               <LatestPosts blogs={blogData} />
 
               {/* <!-- Latest Products box --> */}
-              <LatestProducts products={shopData} />
+              <LatestProducts products={products} />
 
               {/* <!-- Popular Category box --> */}
               <div className="shadow-1 bg-white rounded-xl mt-7.5">

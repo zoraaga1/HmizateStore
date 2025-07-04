@@ -1,4 +1,6 @@
+"use client";
 import React from "react";
+import { useEffect, useState } from 'react';
 import Breadcrumb from "../Common/Breadcrumb";
 import BlogItem from "../Blog/BlogItem";
 import blogData from "../BlogGrid/blogData"; 
@@ -6,9 +8,26 @@ import SearchForm from "../Blog/SearchForm";
 import LatestPosts from "../Blog/LatestPosts";
 import LatestProducts from "../Blog/LatestProducts";
 import Categories from "../Blog/Categories";
-import shopData from "../Shop/shopData"; 
+import {shopData} from "../Shop/shopData"; 
+import { Product } from "@/types/product";
  
 const BlogGridWithSidebar = () => {
+const [products, setProducts] = useState<Product[]>([]);
+  
+    useEffect(() => {
+      const fetchProducts = async () => {
+        try {
+          const data = await shopData(); // ✅ Await the async call
+          setProducts(data);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+  
+      fetchProducts();
+    }, []);
+
+
   const categories = [
     {
       name: "Desktop",
@@ -179,7 +198,7 @@ const BlogGridWithSidebar = () => {
               <LatestPosts blogs={blogData} />
 
               {/* <!-- Latest Products box --> */}
-              <LatestProducts products={shopData} />
+              <LatestProducts products={products} />
 
               {/* <!-- Popular Category box --> */}
               <Categories categories={categories} />

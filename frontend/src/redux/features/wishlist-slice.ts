@@ -8,7 +8,7 @@ type WishListItem = {
   _id: string;  // Changed from number to string to match MongoDB
   title: string;
   price: number;
-  discountedPrice: number;
+  discountedPrice?: number;
   quantity: number;
   status?: string;
   imgs?: string[]; // Simplified to match your Product type
