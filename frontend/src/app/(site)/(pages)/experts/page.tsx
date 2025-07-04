@@ -162,26 +162,33 @@ const ExpertBookingsPage = () => {
         Accepted Booking Requests
       </h1>
       <ul className="space-y-4">
-          {acceptedBookings.map((booking) => (
-            <li key={booking._id} className="p-4 border rounded shadow">
-              <p>
-                <strong>Buyer:</strong> {booking.buyer.name}
-              </p>
-              <p>
-                <strong>Email:</strong> {booking.buyer.email}
-              </p>
-              <p>
-              </p>
+        {acceptedBookings.map((booking) => (
+          <li
+            key={booking._id}
+            className="p-4 border rounded shadow bg-blue-100"
+          >
+            <p>
+              <strong>Buyer:</strong> {booking.buyer.name}
+            </p>
+            <p>
+              <strong>Email:</strong> {booking.buyer.email}
+            </p>
+            <p>
+              <strong>WhatsApp:</strong> {booking.buyer.whatsapp}
+            </p>
+            <hr></hr>
+            <p>
               <strong>Seller:</strong> {booking.productId.createdBy.name}
-              <p>
-                <strong>WhatsApp:</strong> {booking.buyer.whatsapp}
-              </p>
-              <p>
-                <strong>Total Price:</strong> ${booking.totalPrice}
-              </p>
-            </li>
-          ))}
-        </ul>
+            </p>
+            <p>
+              <strong>Email:</strong> {booking.productId.createdBy.email}
+            </p>
+            <p>
+              <strong>Total Price:</strong> ${booking.totalPrice}
+            </p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
