@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "@/api";
 import { jwtDecode } from "jwt-decode";
+import { useRef } from "react";
 
 type User = {
   _id: string;
@@ -50,6 +51,8 @@ export default function ProductDashboard() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [regions, setRegions] = useState<any[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -105,42 +108,82 @@ export default function ProductDashboard() {
   };
 
   const handleAdd = async () => {
-    console.log("Form data before submit:", form);
-
-    if (!form.title || !form.category || form.imgs.length === 0) {
-      alert("Please fill in all required fields and add at least one image.");
+    if (!form.title || !form.category || selectedFiles.length === 0) {
+      alert("Please fill in all required fields and select at least one image.");
       return;
     }
-
+  
     if (!sellerId) {
       alert("Seller ID not found.");
       return;
     }
-
+  
+    setIsUploading(true);
+  
+    const uploadedUrls: string[] = [];
+  
+    for (const file of selectedFiles) {
+      try {
+        const response = await fetch(
+          `https://blob.vercel-storage.com/products/${file.name}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_hmizate_READ_WRITE_TOKEN}`,
+              "x-content-type": file.type,
+              "x-content-length": file.size.toString(),
+            },
+            body: file,
+          }
+        );
+  
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error("Upload failed:", errText);
+          throw new Error("Upload failed");
+        }
+  
+        const json = await response.json();
+        uploadedUrls.push(json.url);
+      } catch (err) {
+        console.error("Error uploading image:", err);
+        alert(`Failed to upload ${file.name}`);
+        setIsUploading(false);
+        return;
+      }
+    }
+  
+    if (uploadedUrls.length === 0) {
+      alert("No images were uploaded. Please try again.");
+      setIsUploading(false);
+      return;
+    }
+  
     try {
       const token = localStorage.getItem("token");
       const { data: newProduct } = await api.post<Product>(
         "/products",
         {
           ...form,
+          imgs: uploadedUrls,
           createdBy: { _id: sellerId },
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (isUploading) {
-        alert("Please wait for images to finish uploading.");
-        return;
-      }
+  
       setProducts((prev) => [...prev, newProduct]);
       resetForm();
+      setSelectedFiles([]); // Clear after upload
     } catch (err) {
       console.error("Failed to create product", err);
       alert("Error creating product");
+    } finally {
+      setIsUploading(false);
     }
   };
-
+  
   const handleUpdate = async () => {
     if (!editingId) return;
     try {
@@ -195,6 +238,8 @@ export default function ProductDashboard() {
       region: "",
       createdBy: { _id: "" },
     });
+    setSelectedFiles([]);
+    fileInputRef.current && (fileInputRef.current.value = "");
   };
 
   useEffect(() => {
@@ -209,54 +254,11 @@ export default function ProductDashboard() {
   }, []);
   console.log("regions", regions);
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    console.log("Image input changed");
-  
     if (!files || files.length === 0) return;
   
-    setIsUploading(true);
-
-    const uploadedUrls: string[] = [];
-  
-    for (const file of Array.from(files)) {
-      try {
-        const response = await fetch(
-          `https://blob.vercel-storage.com/products/${file.name}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_hmizate_READ_WRITE_TOKEN}`,
-              "x-content-type": file.type,
-              "x-content-length": file.size.toString(),
-            },
-            body: file,
-          }
-        );
-  
-        if (!response.ok) {
-          const errText = await response.text();
-          console.error("Upload failed:", errText);
-          throw new Error("Upload failed");
-        }
-  
-        const json = await response.json();
-        console.log("Uploaded image URL:", json.url);
-        uploadedUrls.push(json.url);
-      } catch (err) {
-        console.error("Error uploading image:", err);
-        alert(`Failed to upload ${file.name}`);
-      }
-    }
-  
-    console.log("Uploaded URLs:", uploadedUrls);
-  
-    if (uploadedUrls.length > 0) {
-      setForm((prev) => ({ ...prev, imgs: uploadedUrls }));
-      setIsUploading(false);
-    } else {
-      alert("No images were uploaded. Please try again.");
-    }
+    setSelectedFiles(Array.from(files));
   };
   
   return (
@@ -294,10 +296,21 @@ export default function ProductDashboard() {
             multiple
             accept="image/*"
             onChange={handleImageUpload}
+            ref={fileInputRef}
             className="border p-2 rounded"
           />
         </div>
-        {isUploading && <p className="text-blue-600 text-sm mt-2">Uploading images...</p>}
+        {isUploading && (
+          <p className="text-blue-600 text-sm mt-2">Uploading images...</p>
+        )}
+
+        {selectedFiles.length > 0 && (
+          <ul className="text-sm text-gray-700 mt-2">
+            {selectedFiles.map((file, idx) => (
+              <li key={idx}>📎 {file.name}</li>
+            ))}
+          </ul>
+        )}
 
         <div className="flex flex-col col-span-2">
           <label className="mb-1 font-medium">Product Description</label>
