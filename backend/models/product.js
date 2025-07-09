@@ -6,10 +6,14 @@ const productSchema = new mongoose.Schema({
   description: String,
   category: {
     type: String,
-    enum: ["Televisions", "vehicules", "home appliances", "Mobile & Tablets", "Health & Sports"],
+    enum: ["televisions", "vehicules", "home appliances", "mobile & tablets", "health & sports"],
     required: true,
   },
   imgs: Object,
+  region: {
+    type: String,
+    required: true
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

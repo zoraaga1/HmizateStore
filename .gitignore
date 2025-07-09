@@ -6,3 +6,5 @@ node_modules/side-channel-list/.editorconfig
 frontend/package-lock.json
 testing
 .vscode
+yarn.lock
+frontend/.env.local

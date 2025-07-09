@@ -55,7 +55,7 @@ const HeroCarousal = () => {
 
           <div>
             <Image
-              src="/images/hero/hero-01.png"
+              src="https://rowv7m9afq9bnl4p.public.blob.vercel-storage.com/hero-01-TiwicMYqEUJRvd9BVsat9fsuijj9RA.png"
               alt="headphone"
               width={351}
               height={358}

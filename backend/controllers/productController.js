@@ -24,7 +24,7 @@ const getProduct = async (req, res) => {
 
 // POST (create) a new product
 const createProduct = async (req, res) => {
-  const { title, price, category, imgs, description } = req.body;
+  const { title, price, category, imgs, description, region } = req.body;
   try {
     const newProduct = new product({
       title,
@@ -32,12 +32,15 @@ const createProduct = async (req, res) => {
       category,
       imgs,
       description,
+      region,
       createdBy: req.user._id,
     });
     await newProduct.save();
     res.status(201).json(newProduct);
   } catch (error) {
     res.status(500).json({ error: error.message });
+    console.log("Region from req.body:", req.body.region);
+
   }
 };
 

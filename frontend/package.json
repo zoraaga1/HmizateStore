@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.6.1",
+    "@vercel/blob": "^1.1.1",
     "autoprefixer": "10.4.15",
     "axios": "^1.10.0",
     "jwt-decode": "^4.0.0",

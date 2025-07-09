@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/api";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 type User = {
   _id: string;
@@ -18,9 +18,23 @@ type Product = {
   imgs: string[];
   description: string;
   category: string;
+  region: string;
   createdBy: User;
 };
 
+type Region = {
+  id: number;
+  names: {
+    ar: string;
+    en: string;
+    fr: string;
+  };
+};
+
+type RegionResponse = {
+  count: number;
+  data: Region[];
+};
 export default function ProductDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [sellerId, setSellerId] = useState<string | null>(null);
@@ -30,9 +44,12 @@ export default function ProductDashboard() {
     imgs: [],
     description: "",
     category: "",
+    region: "",
     createdBy: { _id: "" },
   });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [regions, setRegions] = useState<any[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -71,7 +88,9 @@ export default function ProductDashboard() {
   }, []);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -86,6 +105,8 @@ export default function ProductDashboard() {
   };
 
   const handleAdd = async () => {
+    console.log("Form data before submit:", form);
+
     if (!form.title || !form.category || form.imgs.length === 0) {
       alert("Please fill in all required fields and add at least one image.");
       return;
@@ -108,6 +129,10 @@ export default function ProductDashboard() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+      if (isUploading) {
+        alert("Please wait for images to finish uploading.");
+        return;
+      }
       setProducts((prev) => [...prev, newProduct]);
       resetForm();
     } catch (err) {
@@ -120,7 +145,7 @@ export default function ProductDashboard() {
     if (!editingId) return;
     try {
       const token = localStorage.getItem("token");
-      await api.put(`/products/${editingId}`, form, {
+      await api.patch(`/products/${editingId}`, form, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProducts((prev) =>
@@ -154,6 +179,7 @@ export default function ProductDashboard() {
       imgs: product.imgs,
       description: product.description,
       category: product.category,
+      region: product.region,
       createdBy: product.createdBy,
     });
     setEditingId(product._id);
@@ -166,10 +192,73 @@ export default function ProductDashboard() {
       imgs: [],
       description: "",
       category: "",
+      region: "",
       createdBy: { _id: "" },
     });
   };
 
+  useEffect(() => {
+    fetch("/data/regions.json")
+      .then((response) => response.json())
+      .then((data) => {
+        setRegions(data.regions.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching regions:", error);
+      });
+  }, []);
+  console.log("regions", regions);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    console.log("Image input changed");
+  
+    if (!files || files.length === 0) return;
+  
+    setIsUploading(true);
+
+    const uploadedUrls: string[] = [];
+  
+    for (const file of Array.from(files)) {
+      try {
+        const response = await fetch(
+          `https://blob.vercel-storage.com/products/${file.name}`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_hmizate_READ_WRITE_TOKEN}`,
+              "x-content-type": file.type,
+              "x-content-length": file.size.toString(),
+            },
+            body: file,
+          }
+        );
+  
+        if (!response.ok) {
+          const errText = await response.text();
+          console.error("Upload failed:", errText);
+          throw new Error("Upload failed");
+        }
+  
+        const json = await response.json();
+        console.log("Uploaded image URL:", json.url);
+        uploadedUrls.push(json.url);
+      } catch (err) {
+        console.error("Error uploading image:", err);
+        alert(`Failed to upload ${file.name}`);
+      }
+    }
+  
+    console.log("Uploaded URLs:", uploadedUrls);
+  
+    if (uploadedUrls.length > 0) {
+      setForm((prev) => ({ ...prev, imgs: uploadedUrls }));
+      setIsUploading(false);
+    } else {
+      alert("No images were uploaded. Please try again.");
+    }
+  };
+  
   return (
     <div className="max-w-3xl mx-auto mt-10 pt-30 space-y-6">
       <h1 className="text-2xl font-bold">Your Products</h1>
@@ -199,15 +288,16 @@ export default function ProductDashboard() {
         </div>
 
         <div className="flex flex-col col-span-2">
-          <label className="mb-1 font-medium">Image URLs (comma separated)</label>
+          <label className="mb-1 font-medium">Upload Images</label>
           <input
-            name="imgs"
-            value={form.imgs.join(", ")}
-            onChange={handleChange}
-            placeholder="Enter image URLs"
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleImageUpload}
             className="border p-2 rounded"
           />
         </div>
+        {isUploading && <p className="text-blue-600 text-sm mt-2">Uploading images...</p>}
 
         <div className="flex flex-col col-span-2">
           <label className="mb-1 font-medium">Product Description</label>
@@ -229,9 +319,28 @@ export default function ProductDashboard() {
             className="border p-2 rounded"
           >
             <option value="">Select Category</option>
-            <option value="electronics">Electronics</option>
+            <option value="televisions">Televisions</option>
             <option value="vehicules">Vehicles</option>
             <option value="home appliances">Home Appliances</option>
+            <option value="mobile & tablets">Mobile & Tablets</option>
+            <option value="health & sports">Health & Sports</option>
+          </select>
+        </div>
+
+        <div className="flex flex-col col-span-2">
+          <label className="mb-1 font-medium">Region</label>
+          <select
+            name="region"
+            value={form.region}
+            onChange={handleChange}
+            className="border p-2 rounded"
+          >
+            <option value="">Select Region</option>
+            {regions.map((region) => (
+              <option key={region.id} value={region.id}>
+                {region.names.en}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -247,7 +356,10 @@ export default function ProductDashboard() {
 
       <ul className="space-y-4">
         {products.map((product) => (
-          <li key={product._id} className="flex gap-4 items-center border p-3 rounded">
+          <li
+            key={product._id}
+            className="flex gap-4 items-center border p-3 rounded"
+          >
             <img
               src={product.imgs?.[0] || "/images/placeholder.png"}
               alt={product.title}

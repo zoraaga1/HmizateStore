@@ -5,6 +5,7 @@ const products = require("./routes/productRoutes");
 const cors = require("cors")
 const user = require("./routes/userRoutes")
 const bookingRoutes = require('./routes/bookingRoutes');
+const vercel = require("./routes/vercel");
 
 dotenv.config();
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.json())
 app.use("/api/products", products);
 app.use("/api/users", user);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/vercel", vercel)
 
 
 //Get connect to the database

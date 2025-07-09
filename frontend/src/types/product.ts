@@ -7,6 +7,7 @@ export interface Product {
   imgs: string[];
   reviews: number;
   discountedPrice: number;
+  region: string;
   createdBy: {
     _id: string;
     name: string;

@@ -1,8 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { RootState } from "@/redux/store"; 
+import { RootState } from "@/redux/store";
 import { useRouter } from "next/navigation";
+import { MapPin } from "lucide-react";
 
 import { useModalContext } from "@/app/context/QuickViewModalContext";
 import { AppDispatch, useAppSelector } from "@/redux/store";
@@ -17,23 +18,38 @@ import api from "@/api";
 
 const QuickViewModal = () => {
   const userString = localStorage.getItem("user");
-const user = userString ? JSON.parse(userString) : null;
+  const user = userString ? JSON.parse(userString) : null;
   const wishlistItems = useAppSelector((state) => state.wishlistReducer.items);
-  
+
   const router = useRouter();
   const { isModalOpen, closeModal } = useModalContext();
   const { openPreviewModal } = usePreviewSlider();
   const [quantity, setQuantity] = useState(1);
-  
+  const [regions, setRegions] = useState<any[]>([]);
 
   const dispatch = useDispatch<AppDispatch>();
 
- 
-  console.log("user", user);
   // get the product data
   const product = useAppSelector((state) => state.quickViewReducer.value);
-  console.log("product test", product);
   const [activePreview, setActivePreview] = useState(0);
+  console.log("product", product);
+  // fetch region data
+  useEffect(() => {
+    fetch("/data/regions.json")
+      .then((response) => response.json())
+      .then((data) => {
+        setRegions(data.regions.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching regions:", error);
+      });
+  }, []);
+  // console.log("regions", regions);
+
+  const region = regions.find(
+    (region) => region.id === parseInt(product.region as string)
+  );
+  console.log(region);
 
   // preview modal
   const handlePreviewSlider = () => {
@@ -57,12 +73,12 @@ const user = userString ? JSON.parse(userString) : null;
   //booking expert
   const handleBookExpert = async () => {
     const token = localStorage.getItem("token");
-  
+
     if (!token) {
       alert("You need to be signed in to book an expert.");
       return;
     }
-  
+
     try {
       const response = await api.post(
         "/bookings",
@@ -81,7 +97,6 @@ const user = userString ? JSON.parse(userString) : null;
           },
         }
       );
-      console.log("email", response.data.booking.buyer.email);
       console.log("Booking successful:", response.data.booking);
       // alert("Booking submitted! Waiting for expert acceptance.");
     } catch (err) {
@@ -89,8 +104,7 @@ const user = userString ? JSON.parse(userString) : null;
       alert("Failed to book expert. Try again.");
     }
   };
-  
-  
+
   useEffect(() => {
     // closing modal while clicking outside
     function handleClickOutside(event) {
@@ -109,6 +123,7 @@ const user = userString ? JSON.parse(userString) : null;
       setQuantity(1);
     };
   }, [isModalOpen, closeModal]);
+  console.log(product.region);
 
   return (
     <div
@@ -354,6 +369,11 @@ const user = userString ? JSON.parse(userString) : null;
               </div>
 
               <p>{product.description}</p>
+              <h4 className="flex items-center gap-2 text-sm text-gray-700">
+                <MapPin className="w-4 h-4 text-gray-500" />
+                <span className="font-bold">Region:</span>{" "}
+                {region?.names.en || "Unknown"}
+              </h4>
 
               <div className="flex flex-wrap justify-between gap-5 mt-6 mb-7.5">
                 <div>
