@@ -1,12 +1,37 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { jwtDecode } from "jwt-decode";
 import { FaBox, FaDollarSign, FaShoppingCart, FaUsers } from 'react-icons/fa';
 import StatsCard from '../../../../../components/AdminDashboard/StatsCard';
 import SalesChart from '../../../../../components/AdminDashboard/SalesChart';
 import RecentProducts from '../../../../../components/AdminDashboard/RecentProducts';
 import QuickActions from '../../../../../components/AdminDashboard/QuickActions';
+import api from "@/api";
+
+type User = {
+  _id: string;
+  name?: string;
+  email?: string;
+  rating?: number;
+};
+
+type Product = {
+  _id: string;
+  title: string;
+  price: number;
+  imgs: string[];
+  description: string;
+  category: string;
+  region: string;
+  stock: number;
+  createdBy: User;
+};
 
 const SellerDashboard = () => {
+
+    const [recentProducts, setRecentProducts] = useState<Product[]>([]);
+    const [sellerId, setSellerId] = useState<string | null>(null);
+  
   // Mock data
   const stats = {
     totalProducts: 24,
@@ -21,14 +46,46 @@ const SellerDashboard = () => {
       { month: 'May', sales: 900 },
       { month: 'Jun', sales: 1500 },
     ],
-    recentProducts: [
-      { id: 1, name: 'Wireless Headphones', price: 199.99, stock: 15, category: 'electronics' },
-      { id: 2, name: 'Running Shoes', price: 89.99, stock: 8, category: 'sports' },
-      { id: 3, name: 'Smart Watch', price: 249.99, stock: 20, category: 'electronics' },
-      { id: 4, name: 'Bluetooth Speaker', price: 79.99, stock: 0, category: 'electronics' },
-    ]
+    // recentProducts: [
+    //   { id: 1, name: 'Wireless Headphones', price: 199.99, stock: 15, category: 'electronics' },
+    //   { id: 2, name: 'Running Shoes', price: 89.99, stock: 8, category: 'sports' },
+    //   { id: 3, name: 'Smart Watch', price: 249.99, stock: 20, category: 'electronics' },
+    //   { id: 4, name: 'Bluetooth Speaker', price: 79.99, stock: 0, category: 'electronics' },
+    // ]
   };
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const decoded: any = jwtDecode(token);
+      const sellerIdFromToken = decoded.user?.id || decoded.id || decoded.sub;
+      if (!sellerIdFromToken) {
+        console.error("User ID not found in token");
+        return;
+      }
+      setSellerId(sellerIdFromToken);
+
+      const fetchProducts = async () => {
+        const { data } = await api.get<Product[]>("/products", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const sellerProducts = data.filter(
+          (product) => product.createdBy._id === sellerIdFromToken
+        );
+
+        setRecentProducts(sellerProducts);
+      };
+
+      fetchProducts();
+    } catch (err) {
+      console.error("Invalid token or fetch failed", err);
+    }
+  }, []);
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-30 py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Seller Dashboard</h1>
@@ -71,7 +128,7 @@ const SellerDashboard = () => {
       {/* Charts and Recent Products */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <SalesChart data={stats.salesData} />
-        <RecentProducts products={stats.recentProducts} />
+        <RecentProducts products={recentProducts} />
       </div>
       
       <QuickActions />

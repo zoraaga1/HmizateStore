@@ -63,6 +63,12 @@ const Signin = () => {
 
             <div>
               <form onSubmit={handleSubmit}>
+              {error && (
+  <div className="text-red-600 bg-red-100 border border-red-300 p-3 rounded mb-4 text-sm">
+    {error}
+  </div>
+)}
+
                 <div className="mb-5">
                   <label htmlFor="email" className="block mb-2.5">
                     Email

@@ -24,7 +24,7 @@ const getProduct = async (req, res) => {
 
 // POST (create) a new product
 const createProduct = async (req, res) => {
-  const { title, price, category, imgs, description, region } = req.body;
+  const { title, price, category, imgs, description, region, stock } = req.body;
   try {
     const newProduct = new product({
       title,
@@ -33,6 +33,7 @@ const createProduct = async (req, res) => {
       imgs,
       description,
       region,
+      stock,
       createdBy: req.user._id,
     });
     await newProduct.save();

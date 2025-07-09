@@ -20,6 +20,7 @@ type Product = {
   description: string;
   category: string;
   region: string;
+  stock: number;
   createdBy: User;
 };
 
@@ -46,6 +47,7 @@ export default function ProductDashboard() {
     description: "",
     category: "",
     region: "",
+    stock: 0,
     createdBy: { _id: "" },
   });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -223,6 +225,7 @@ export default function ProductDashboard() {
       description: product.description,
       category: product.category,
       region: product.region,
+      stock: product.stock,
       createdBy: product.createdBy,
     });
     setEditingId(product._id);
@@ -236,6 +239,7 @@ export default function ProductDashboard() {
       description: "",
       category: "",
       region: "",
+      stock: 0,
       createdBy: { _id: "" },
     });
     setSelectedFiles([]);
@@ -283,6 +287,7 @@ export default function ProductDashboard() {
             name="price"
             type="number"
             value={form.price}
+            min="0"
             onChange={handleChange}
             placeholder="Enter price"
             className="border p-2 rounded"
@@ -311,6 +316,19 @@ export default function ProductDashboard() {
             ))}
           </ul>
         )}
+
+        <div className="flex flex-col col-span-2">
+          <label className="mb-1 font-medium">Stock</label>
+          <input
+            name="stock"
+            type="number"
+            min="0"
+            value={form.stock}
+            onChange={handleChange}
+            placeholder="Enter stock quantity"
+            className="border p-2 rounded"
+          />
+        </div>
 
         <div className="flex flex-col col-span-2">
           <label className="mb-1 font-medium">Product Description</label>

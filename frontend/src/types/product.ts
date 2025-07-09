@@ -8,6 +8,7 @@ export interface Product {
   reviews: number;
   discountedPrice: number;
   region: string;
+  stock: number;
   createdBy: {
     _id: string;
     name: string;

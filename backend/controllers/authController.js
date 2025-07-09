@@ -21,10 +21,10 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
       const isExist = await User.findOne({ email });
-      if (!isExist) return res.status(400).send("User not found");
+      if (!isExist) return res.status(400).json({ message: "Email or password is incorrect. Please try again." });
   
       const isMatch = await bcrypt.compare(password, isExist.password);
-      if (!isMatch) return res.status(400).send("Incorrect password");
+      if (!isMatch) return res.status(400).json({ message: "Email or password is incorrect. Please try again." });
   
       const token = generateToken(isExist._id);
   
