@@ -31,10 +31,10 @@ const SellerDashboard = () => {
 
     const [recentProducts, setRecentProducts] = useState<Product[]>([]);
     const [sellerId, setSellerId] = useState<string | null>(null);
+    const totalProducts = recentProducts.length;
   
   // Mock data
   const stats = {
-    totalProducts: 24,
     totalSales: 3240,
     pendingOrders: 8,
     customers: 124,
@@ -43,7 +43,7 @@ const SellerDashboard = () => {
       { month: 'Feb', sales: 600 },
       { month: 'Mar', sales: 800 },
       { month: 'Apr', sales: 1200 },
-      { month: 'May', sales: 900 },
+      { month: 'May', sales: 546843516465 },
       { month: 'Jun', sales: 1500 },
     ],
     // recentProducts: [
@@ -86,6 +86,7 @@ const SellerDashboard = () => {
       console.error("Invalid token or fetch failed", err);
     }
   }, []);
+  console.log("products", recentProducts);
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-30 py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Seller Dashboard</h1>
@@ -94,7 +95,7 @@ const SellerDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatsCard 
           title="Total Products" 
-          value={stats.totalProducts} 
+          value={totalProducts} 
           icon={FaBox} 
           color="text-blue-600" 
           change="+12%" 

@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import React, { useState, useEffect } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import SingleGridItem from "../Shop/SingleGridItem";
@@ -7,10 +7,14 @@ import CustomSelect from "../ShopWithSidebar/CustomSelect";
 import api from "@/api";
 import { Product } from "@/types/product";
 
-const ShopWithoutSidebar = () => {
+interface ShopWithoutSidebarProps {
+  products?: Product[];
+}
+
+const ShopWithoutSidebar: React.FC<ShopWithoutSidebarProps> = ({ products: propProducts }) => {
   const [productStyle, setProductStyle] = useState("grid");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(propProducts || []);
+  const [loading, setLoading] = useState(!propProducts); // if no prop, loading true
   const [error, setError] = useState<string | null>(null);
 
   const options = [
@@ -20,6 +24,8 @@ const ShopWithoutSidebar = () => {
   ];
 
   useEffect(() => {
+    if (propProducts) return;
+
     const fetchProducts = async () => {
       try {
         const response = await api.get("/products");
@@ -33,7 +39,7 @@ const ShopWithoutSidebar = () => {
     };
 
     fetchProducts();
-  }, []);
+  }, [propProducts]);
 
   if (loading) {
     return <div className="text-center py-10">Loading products...</div>;
@@ -46,7 +52,7 @@ const ShopWithoutSidebar = () => {
   return (
     <>
       <Breadcrumb
-        title={"Explore All Products"}
+        title={"Explore Products"}
         pages={["shop", "/", "shop without sidebar"]}
       />
       <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#f3f4f6]">

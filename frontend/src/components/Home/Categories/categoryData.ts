@@ -5,7 +5,7 @@ const data = [
     img: "/images/categories/categories-01.png",
   },
   {
-    title: "Laptop & PC",
+    title: "Vehicules",
     id: 2,
     img: "/images/categories/categories-02.png",
   },

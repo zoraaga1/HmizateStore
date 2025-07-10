@@ -4,7 +4,8 @@ const {
     getProduct,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getProductsByCategory,
 } = require("../controllers/productController");
 const protect = require("../middlewares/auth");
 
@@ -15,5 +16,6 @@ router.get("/:id", getProduct);
 router.post("/", protect, createProduct);
 router.patch("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
+router.get("/category/:slug", getProductsByCategory);
 
 module.exports = router;

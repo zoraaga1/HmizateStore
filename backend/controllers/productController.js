@@ -71,10 +71,31 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+// GET /api/products/category/:slug
+const getProductsByCategory = async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const category = decodeURIComponent(slug).toLowerCase().replace(/-/g, " ").trim();
+    const products = await product.find({ category: { $regex: new RegExp("^" + category + "$", "i") } });
+
+    console.log("Found products:", products.length);
+
+    if (!products.length) {
+      return res.status(404).json({ message: `No products found in this category: ${category}` });
+    }
+
+    return res.status(200).json(products);
+  } catch (err) {
+    console.error("Error fetching products by category:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   getAllProducts,
   getProduct,
   createProduct,
   updateProduct,
   deleteProduct,
+  getProductsByCategory,
 };

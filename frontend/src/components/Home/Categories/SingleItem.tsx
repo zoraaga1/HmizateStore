@@ -1,10 +1,15 @@
 import { Category } from "@/types/category";
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const SingleItem = ({ item }: { item: Category }) => {
+  // Generate slug from title (if you don't already have one in your category data)
+  const slug = encodeURIComponent(item.title.toLowerCase().replace(/\s+/g, "-"));
+  console.log(slug, "slug");
+
   return (
-    <a href="#" className="group flex flex-col items-center">
+    <Link href={`/category/${slug}`} className="group flex flex-col items-center">
       <div className="max-w-[130px] w-full bg-[#F2F3F8] h-32.5 rounded-full flex items-center justify-center mb-4">
         <Image src={item.img} alt="Category" width={82} height={62} />
       </div>
@@ -14,7 +19,7 @@ const SingleItem = ({ item }: { item: Category }) => {
           {item.title}
         </h3>
       </div>
-    </a>
+    </Link>
   );
 };
 
