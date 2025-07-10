@@ -7,7 +7,7 @@ exports.createBooking = async (req, res) => {
 
     const booking = new Booking({
       productId,
-      expertId: undefined,
+      // expertId: undefined,
       buyer,
       totalPrice: totalPrice || 0,
       status: "pending",
@@ -40,7 +40,7 @@ exports.getExpertBookings = async (req, res) => {
         }
       })
       .populate('buyer');
-      console.log("Populated bookings:", JSON.stringify(bookings[0], null, 2)); // Log first booking
+      console.log("Populated bookings:", JSON.stringify(bookings[0], null, 2));
     res.status(200).json(bookings);
   } catch (err) {
     res.status(500).json({ message: "Error fetching bookings", error: err.message });

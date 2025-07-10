@@ -178,10 +178,10 @@ const ExpertBookingsPage = () => {
             </p>
             <hr></hr>
             <p>
-              <strong>Seller:</strong> {booking.productId.createdBy.name}
+              <strong>Seller:</strong> {booking.productId?.createdBy?.name || "N/A"}
             </p>
             <p>
-              <strong>Email:</strong> {booking.productId.createdBy.email}
+              <strong>Email:</strong> {booking.productId?.createdBy?.email || "N/A"}
             </p>
             <p>
               <strong>Total Price:</strong> ${booking.totalPrice}

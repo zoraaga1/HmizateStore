@@ -9,7 +9,7 @@ const BookingSchema = new mongoose.Schema({
   expertId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true,
+    // required: true,
   },
   buyer: {
     name: { type: String, required: true },

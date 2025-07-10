@@ -14,6 +14,7 @@ const initialState: InitialState = {
     category: "",
     imgs: [],
     region: "",
+    stock: 0,
     reviews: 0,
     discountedPrice: 0,
     createdBy: { 
