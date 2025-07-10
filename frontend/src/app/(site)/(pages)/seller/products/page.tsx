@@ -355,6 +355,7 @@ export default function ProductDashboard() {
             <option value="home appliances">Home Appliances</option>
             <option value="mobile & tablets">Mobile & Tablets</option>
             <option value="health & sports">Health & Sports</option>
+            <option value="laptop & pc">Laptop & PC</option>
           </select>
         </div>
 

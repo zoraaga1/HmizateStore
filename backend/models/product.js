@@ -6,7 +6,7 @@ const productSchema = new mongoose.Schema({
   description: String,
   category: {
     type: String,
-    enum: ["televisions", "vehicules", "home appliances", "mobile & tablets", "health & sports"],
+    enum: ["televisions", "vehicules", "home appliances", "mobile & tablets", "health & sports", "laptop & pc"],
     required: true,
   },
   imgs: Object,

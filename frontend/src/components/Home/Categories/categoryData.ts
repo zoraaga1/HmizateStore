@@ -28,7 +28,13 @@ const data = [
     title: "Health & Sports",
     id: 6,
     img: "/images/categories/categories-06.png",
+  },
+  {
+    title: "Laptop & PC",
+    id: 6,
+    img: "/images/categories/categories-08.png",
   }
+
 ];
 
 export default data;

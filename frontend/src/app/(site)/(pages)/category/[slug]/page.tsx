@@ -47,8 +47,17 @@ const CategoryPage = () => {
   if (error) return <p>Error loading products.</p>;
 
   if (notFound || products.length === 0) {
-    return <p>No products found in this category.</p>;
+    return (
+      <main>
+        <section className="pt-32 text-center">
+          <p className="text-lg text-gray-600">
+            No products found in this category.
+          </p>
+        </section>
+      </main>
+    );
   }
+  
 
   return (
     <main>
