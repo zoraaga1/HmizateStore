@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import api from "@/api";
 import { jwtDecode } from "jwt-decode";
 import { useRef } from "react";
+import Image from 'next/image';
+
 
 type User = {
   _id: string;
@@ -392,7 +394,7 @@ export default function ProductDashboard() {
             key={product._id}
             className="flex gap-4 items-center border p-3 rounded"
           >
-            <img
+            <Image
               src={product.imgs?.[0] || "/images/placeholder.png"}
               alt={product.title}
               className="w-16 h-16 object-cover rounded"

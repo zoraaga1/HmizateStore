@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 type User = {
@@ -71,9 +72,11 @@ const RecentProducts: React.FC<RecentProductsProps> = ({ products }) => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full">
-                      <img
+                      <Image
                         src={product.imgs?.[0] || "/placeholder.png"}
                         alt={product.title}
+                        width={90}
+                        height={60}
                         className="h-10 w-10 rounded-full object-cover"
                       />
                     </div>

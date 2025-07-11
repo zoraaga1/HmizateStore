@@ -1,5 +1,12 @@
 const Booking = require('../models/Booking');
 
+const validStatusTransitions = {
+  pending: ["in_progress", "canceled", "completed"],
+  in_progress: ["in_progress", "completed", "canceled"],
+  completed: ["in_progress", "canceled"],
+  canceled: ["in_progress", "completed",],
+};
+
 // 1. Create Booking
 exports.createBooking = async (req, res) => {
   try {
@@ -47,35 +54,35 @@ exports.getExpertBookings = async (req, res) => {
   }
 };
 
-// 3. Accept Booking
-exports.acceptBooking = async (req, res) => {
+// 3. Update Booking Status
+exports.updateBookingStatus = async (req, res) => {
   try {
     const bookingId = req.params.id;
-    const expertId = req.user._id;
+    const { newStatus, expertId  } = req.body;
 
-    // Find booking by ID (without filtering expertId)
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId).populate('buyer');
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    // If already assigned to an expert, reject
-    if (booking.expertId) {
-      return res.status(400).json({ message: "Booking already assigned to an expert" });
+    const currentStatus = booking.status;
+    const allowedTransitions = validStatusTransitions[currentStatus];
+
+    if (!allowedTransitions.includes(newStatus)) {
+      return res.status(400).json({
+        message: `Invalid status transition from '${currentStatus}' to '${newStatus}'`
+      });
     }
 
-    booking.status = "accepted";
-    booking.expertId = expertId;  // assign current expert
+    booking.status = newStatus;
+    booking.expertId = expertId;
     await booking.save();
 
-    res.status(200).json({
-      message: "Booking accepted",
-      whatsapp: booking.buyer.whatsapp,
-    });
+    res.status(200).json({ message: `Booking status updated to ${newStatus}`, booking });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error accepting booking" });
+    console.error("Error updating booking status:", err);
+    res.status(500).json({ message: "Error updating booking status" });
   }
 };
 

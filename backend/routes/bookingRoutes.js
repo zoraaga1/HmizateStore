@@ -9,8 +9,8 @@ router.post('/', bookingController.createBooking);
 // 2. Get bookings for logged-in expert
 router.get('/expert/bookings', protect, bookingController.getExpertBookings);
 
-// 3. Accept a booking by ID
-router.post('/:id/accept', protect, bookingController.acceptBooking);
+// 3. Update a booking by ID
+router.patch('/:id/status', protect, bookingController.updateBookingStatus);
 
 // 4. Get all pending bookings
 router.get("/pending", protect, bookingController.getPendingBookings);
