@@ -59,16 +59,28 @@ const QuickViewModal = () => {
   };
 
   // add to cart
-  const handleAddToCart = () => {
-    dispatch(
-      addItemToCart({
-        ...product,
-        quantity,
-      })
-    );
+const handleAddToCart = () => {
+  console.log("Dispatching addItemToCart with:", {
+    _id: product._id,
+    title: product.title,
+    price: product.price,
+    discountedPrice: product.discountedPrice ?? product.price,
+    quantity,
+    imgs: product.imgs,
+  });
+  dispatch(
+    addItemToCart({
+      _id: product._id,
+      title: product.title,
+      price: product.price,
+      discountedPrice: product.discountedPrice ?? product.price,
+      quantity,
+      imgs: product.imgs,
+    })
+  );
 
-    closeModal();
-  };
+  closeModal();
+};
 
   //booking expert
   const handleBookExpert = async () => {
@@ -383,7 +395,7 @@ const QuickViewModal = () => {
 
                   <span className="flex items-center gap-2">
                     <span className="font-semibold text-dark text-xl xl:text-heading-4">
-                      ${product.price}
+                      {product.price} DH
                     </span>
                   </span>
                 </div>

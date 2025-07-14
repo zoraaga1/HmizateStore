@@ -10,21 +10,94 @@ const Signup = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [cinFile, setCinFile] = useState<File | null>(null);
+const [cinUrl, setCinUrl] = useState<string>("");
+const [isUploadingCIN, setIsUploadingCIN] = useState(false);
+const [diplomaFile, setDiplomaFile] = useState<File | null>(null);
+const [uploadedDiplomaUrl, setUploadedDiplomaUrl] = useState<string>("");
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
     
+        //sending files to vercel blob
+        let uploadedCinUrl = "";
+
+        if ((role === "seller" || role === "expert") && cinFile) {
+          try {
+            const uploadRes = await fetch(
+              `https://blob.vercel-storage.com/users/${cinFile.name}`,
+              {
+                method: "PUT",
+                headers: {
+                  Authorization: `Bearer ${process.env.NEXT_PUBLIC_hmizate_READ_WRITE_TOKEN}`,
+                  "x-content-type": cinFile.type,
+                  "x-content-length": cinFile.size.toString(),
+                },
+                body: cinFile,
+              }
+            );
+        
+            if (!uploadRes.ok) {
+              const errorText = await uploadRes.text();
+              throw new Error("CIN Upload failed: " + errorText);
+            }
+        
+            const json = await uploadRes.json();
+            uploadedCinUrl = json.url;
+          } catch (err) {
+            setError("Failed to upload CIN image.");
+            setIsLoading(false);
+            console.error("CIN upload error:", err);
+            return;
+          }
+        }
+
+        // sending diploma to vercel blob
+        let diplomaUrl = "";
+
+if (role === "expert" && diplomaFile) {
+  try {
+    const uploadDiplomaRes = await fetch(
+      `https://blob.vercel-storage.com/users/${diplomaFile.name}`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_hmizate_READ_WRITE_TOKEN}`,
+          "x-content-type": diplomaFile.type,
+          "x-content-length": diplomaFile.size.toString(),
+        },
+        body: diplomaFile,
+      }
+    );
+
+    if (!uploadDiplomaRes.ok) {
+      const errorText = await uploadDiplomaRes.text();
+      throw new Error("Diploma upload failed: " + errorText);
+    }
+
+    const diplomaJson = await uploadDiplomaRes.json();
+    diplomaUrl = diplomaJson.url;
+  } catch (err) {
+    setError("Failed to upload diploma.");
+    setIsLoading(false);
+    console.error("Diploma upload error:", err);
+    return;
+  }
+}
+
+        
     const formData = new FormData(e.target);
     const data = {
       name: formData.get("name"),
       email: formData.get("email"),
       role: formData.get("role"),
-      cin: formData.get("cin"),
-      diploma: formData.get("diploma"),
+      cin: uploadedCinUrl || null,
+      diploma: diplomaUrl || null,
       password: formData.get("password"),
-      // We'll remove confirmPassword before sending
       confirmPassword: formData.get("re-type-password"),
     };
 
@@ -47,6 +120,7 @@ const Signup = () => {
       setIsLoading(false);
       return;
     }
+
 
     try {
       // Remove unnecessary fields before sending
@@ -173,11 +247,13 @@ const Signup = () => {
                       CIN <span className="text-red">*</span>
                     </label>
                     <input
-                      type="text"
+                      type="file"
+                      multiple
                       id="cin"
                       name="cin"
                       required
                       placeholder="Enter your CIN"
+                      onChange={(e) => setCinFile(e.target.files?.[0] || null)}
                       className="form-input rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
                     />
                   </div>
@@ -190,11 +266,11 @@ const Signup = () => {
                     Diploma <span className="text-red">*</span>
                   </label>
                   <input
-                    type="text"
+                    type="file"
                     id="diploma"
                     name="diploma"
                     required
-                    placeholder="Enter your field"
+                    onChange={(e) => setDiplomaFile(e.target.files?.[0] || null)}
                     className="form-input rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-3 px-5 outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
                   />
                 </div>

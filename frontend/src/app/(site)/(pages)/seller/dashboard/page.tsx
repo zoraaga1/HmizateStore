@@ -103,7 +103,7 @@ const SellerDashboard = () => {
         
         <StatsCard 
           title="Total Sales" 
-          value={`$${stats.totalSales}`} 
+          value={`${stats.totalSales} DH`} 
           icon={FaDollarSign} 
           color="text-green-600" 
           change="+8%" 

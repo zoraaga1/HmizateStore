@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import api from "@/api";
 import { jwtDecode } from "jwt-decode";
 import { useRef } from "react";
-import Image from 'next/image';
-
+import Image from "next/image";
 
 type User = {
   _id: string;
@@ -113,19 +112,21 @@ export default function ProductDashboard() {
 
   const handleAdd = async () => {
     if (!form.title || !form.category || selectedFiles.length === 0) {
-      alert("Please fill in all required fields and select at least one image.");
+      alert(
+        "Please fill in all required fields and select at least one image."
+      );
       return;
     }
-  
+
     if (!sellerId) {
       alert("Seller ID not found.");
       return;
     }
-  
+
     setIsUploading(true);
-  
+
     const uploadedUrls: string[] = [];
-  
+
     for (const file of selectedFiles) {
       try {
         const response = await fetch(
@@ -140,13 +141,13 @@ export default function ProductDashboard() {
             body: file,
           }
         );
-  
+
         if (!response.ok) {
           const errText = await response.text();
           console.error("Upload failed:", errText);
           throw new Error("Upload failed");
         }
-  
+
         const json = await response.json();
         uploadedUrls.push(json.url);
       } catch (err) {
@@ -156,13 +157,13 @@ export default function ProductDashboard() {
         return;
       }
     }
-  
+
     if (uploadedUrls.length === 0) {
       alert("No images were uploaded. Please try again.");
       setIsUploading(false);
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("token");
       const { data: newProduct } = await api.post<Product>(
@@ -176,10 +177,10 @@ export default function ProductDashboard() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-  
+
       setProducts((prev) => [...prev, newProduct]);
       resetForm();
-      setSelectedFiles([]); // Clear after upload
+      setSelectedFiles([]);
     } catch (err) {
       console.error("Failed to create product", err);
       alert("Error creating product");
@@ -187,7 +188,7 @@ export default function ProductDashboard() {
       setIsUploading(false);
     }
   };
-  
+
   const handleUpdate = async () => {
     if (!editingId) return;
     try {
@@ -263,10 +264,10 @@ export default function ProductDashboard() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-  
+
     setSelectedFiles(Array.from(files));
   };
-  
+
   return (
     <div className="max-w-3xl mx-auto mt-10 pt-30 space-y-6">
       <h1 className="text-2xl font-bold">Your Products</h1>
@@ -284,7 +285,7 @@ export default function ProductDashboard() {
         </div>
 
         <div className="flex flex-col">
-          <label className="mb-1 font-medium">Price ($)</label>
+          <label className="mb-1 font-medium">Price (DH)</label>
           <input
             name="price"
             type="number"
@@ -397,12 +398,14 @@ export default function ProductDashboard() {
             <Image
               src={product.imgs?.[0] || "/images/placeholder.png"}
               alt={product.title}
+              width={64}
+              height={64}
               className="w-16 h-16 object-cover rounded"
             />
             <div className="flex-1">
               <h2 className="font-semibold">{product.title}</h2>
               <p>
-                ${product.price.toFixed(2)} • {product.description}
+                {product.price.toFixed(2)} DH • {product.description}
               </p>
               <p className="text-sm text-gray-500">{product.category}</p>
               {product.imgs?.length > 1 && (

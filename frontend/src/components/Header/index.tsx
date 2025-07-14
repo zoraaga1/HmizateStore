@@ -270,6 +270,17 @@ const Header = () => {
                         >
                           Profile
                         </Link>
+
+                        {userRole === 'seller' && (
+      <Link
+        href="/seller/dashboard"
+        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+        onClick={() => setUserDropdownOpen(false)}
+      >
+        Dashboard
+      </Link>
+    )}
+
                         <button
                           onClick={handleLogout}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -336,7 +347,7 @@ const Header = () => {
                         cart
                       </span>
                       <p className="font-medium text-custom-sm text-dark">
-                        ${totalPrice}
+                        {totalPrice} DH
                       </p>
                     </div>
                   </button>

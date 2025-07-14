@@ -1,4 +1,7 @@
 const Booking = require('../models/Booking');
+const Chat = require('../models/Chat');
+const Product = require('../models/product')
+const mongoose = require('mongoose');
 
 const validStatusTransitions = {
   pending: ["in_progress", "canceled", "completed"],
@@ -56,36 +59,89 @@ exports.getExpertBookings = async (req, res) => {
 
 // 3. Update Booking Status
 exports.updateBookingStatus = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const bookingId = req.params.id;
-    const { newStatus, expertId  } = req.body;
+    const { id } = req.params;
+    const { newStatus } = req.body;
+    const expertId = req.user._id;
 
-    const booking = await Booking.findById(bookingId).populate('buyer');
-
+    // 1. Validate and update booking
+    const booking = await Booking.findById(id).session(session);
     if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+      await session.abortTransaction();
+      return res.status(404).json({ error: 'Booking not found' });
     }
 
-    const currentStatus = booking.status;
-    const allowedTransitions = validStatusTransitions[currentStatus];
+    // Status transition validation
+    const validTransitions = {
+      pending: ['in_progress', 'canceled'],
+      in_progress: ['completed', 'canceled'],
+      completed: [],
+      canceled: []
+    };
 
-    if (!allowedTransitions.includes(newStatus)) {
-      return res.status(400).json({
-        message: `Invalid status transition from '${currentStatus}' to '${newStatus}'`
+    if (!validTransitions[booking.status].includes(newStatus)) {
+      await session.abortTransaction();
+      return res.status(400).json({ 
+        error: `Invalid status transition from ${booking.status} to ${newStatus}`
       });
     }
 
+    // Update booking
     booking.status = newStatus;
-    booking.expertId = expertId;
-    await booking.save();
+    if (newStatus === 'in_progress') {
+      booking.expertId = expertId;
+    }
+    await booking.save({ session });
 
-    res.status(200).json({ message: `Booking status updated to ${newStatus}`, booking });
-  } catch (err) {
-    console.error("Error updating booking status:", err);
-    res.status(500).json({ message: "Error updating booking status" });
+    // Initialize chats if needed
+    if (newStatus === 'in_progress') {
+      await initializeBookingChats(booking, session);
+    }
+
+    await session.commitTransaction();
+    res.status(200).json(booking);
+
+  } catch (error) {
+    await session.abortTransaction();
+    console.error('Booking update failed:', error);
+    res.status(500).json({ 
+      error: error.message,
+      details: error.errors || null 
+    });
+  } finally {
+    session.endSession();
   }
 };
 
+async function initializeBookingChats(booking, session) {
+  // Get product with owner
+  const product = await Product.findById(booking.productId)
+    .select('createdBy')
+    .session(session);
+  
+  if (!product?.createdBy) {
+    throw new Error('Product owner not found');
+  }
+
+  // Create properly formatted participants array
+  const participants = [
+    new mongoose.Types.ObjectId(booking.expertId),
+    new mongoose.Types.ObjectId(product.createdBy)
+  ];
+
+  // Create chat - ensure we're saving an array of exactly 2 ObjectIds
+  const chat = await Chat.create([{
+    participants: participants, // This must be an array of 2 ObjectIds
+    type: 'expert-seller',
+    bookingId: booking._id,
+    productId: booking.productId
+  }], { session });
+
+  return chat[0];
+}
 // 4. Get All Pending Bookings
 exports.getPendingBookings = async (req, res) => {
   try {

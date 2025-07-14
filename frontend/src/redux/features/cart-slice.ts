@@ -6,12 +6,12 @@ type InitialState = {
 };
 
 type CartItem = {
-  _id: string;  // Changed from number to string to match MongoDB
+  _id: string;
   title: string;
   price: number;
   discountedPrice?: number;
   quantity: number;
-  imgs?: string[]; // Changed to match your Product type
+  imgs?: string[];
 };
 
 const initialState: InitialState = {
@@ -39,13 +39,13 @@ export const cart = createSlice({
         });
       }
     },
-    removeItemFromCart: (state, action: PayloadAction<string>) => { // Changed to string
+    removeItemFromCart: (state, action: PayloadAction<string>) => {
       const itemId = action.payload;
       state.items = state.items.filter((item) => item._id !== itemId);
     },
     updateCartItemQuantity: (
       state,
-      action: PayloadAction<{ _id: string; quantity: number }> // Changed to _id
+      action: PayloadAction<{ _id: string; quantity: number }> 
     ) => {
       const { _id, quantity } = action.payload;
       const existingItem = state.items.find((item) => item._id === _id);

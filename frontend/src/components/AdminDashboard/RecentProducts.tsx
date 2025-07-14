@@ -91,7 +91,7 @@ const RecentProducts: React.FC<RecentProductsProps> = ({ products }) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ${product.price.toFixed(2)}
+                  {product.price.toFixed(2)} DH
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {product.stock}
